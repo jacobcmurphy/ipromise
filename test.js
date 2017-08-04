@@ -1,4 +1,4 @@
-let IPromise = require('./promise');
+let IPromise = require('./ipromise');
 
 new IPromise((resolve, reject) => {
   reject('start_reject_1 ');
@@ -12,8 +12,6 @@ new IPromise((resolve, reject) => {
 .then((data) => console.log(data + 'then_2 '));
 
 
-
-
 new IPromise((resolve, reject) => {
   resolve('start_resolve_1 ');
   resolve('start_resolve_2 ');
@@ -25,5 +23,4 @@ new IPromise((resolve, reject) => {
   return new IPromise((resolve, reject) => resolve(err + 'catch_1 '));
 }).then((data) => {
   console.log(data + 'then_2 ');
-})
-;
+});
