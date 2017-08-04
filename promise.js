@@ -1,7 +1,7 @@
-function Promise(fn) {
-  var state = 'PENDING'; // store state which can be 'PENDING', 'FULFILLED' or 'REJECTED'
-  var value = null;      // store value once 'FULFILLED' or 'REJECTED'
-  var handlers = [];     // store sucess & failure handlers
+function IPromise(fn) {
+  let state = 'PENDING'; // store state which can be 'PENDING', 'FULFILLED' or 'REJECTED'
+  let value = null;      // store value once 'FULFILLED' or 'REJECTED'
+  let handlers = [];     // store sucess & failure handlers
 
   function reject(error) {
     state = 'REJECTED';
@@ -37,9 +37,8 @@ function Promise(fn) {
   }
 
   this.then = function (onFulfilled, onRejected) {
-    var self = this;
     return new Promise(function (resolve, reject) {
-      var doneFullfillFn = function (result) {
+      let doneFullfillFn = function (result) {
         if (typeof onFulfilled === 'function') {
           try {
             return resolve(onFulfilled(result));
@@ -51,7 +50,7 @@ function Promise(fn) {
         }
       };
 
-      var doneRejectedFn = function (error) {
+      let doneRejectedFn = function (error) {
         if (typeof onRejected === 'function') {
           try {
             return resolve(onRejected(error));
@@ -73,25 +72,12 @@ function Promise(fn) {
   };
 
 
-  // this.catch = function(onRejected) {
-  //   var self = this;
-  //   return new Promise(function (resolve, reject) {
-  //     return self.done(null, function (error) {
-  //       if (typeof onRejected === 'function') {
-  //         try {
-  //           return resolve(onRejected(error));
-  //         } catch (ex) {
-  //           return reject(ex);
-  //         }
-  //       } else {
-  //         return reject(error);
-  //       }
-  //     });
-  //   });
-  // }
+  this.catch = function(onRejected) {
+    return this.then(null, onRejected);
+  }
 
   function doResolve(fn, onFulfilled, onRejected) {
-    var done = false;
+    let done = false;
     try {
       fn(function (value) {
         if (done) return;
@@ -112,23 +98,4 @@ function Promise(fn) {
   doResolve(fn, resolve, reject);
 }
 
-
-let p = new Promise((resolve, reject) => {
-  console.log("HIT 1");
-  resolve("a");
-  reject("y");
-});
-
-
-// p.catch((err) => {
-//   console.log("HIT 3");
-//   console.log("err: " + err);
-// });
-
-p.then((data) => {
-  console.log("HIT 2");
-  console.log("data: " + data);
-  return new Promise((resolve, reject) => resolve('next'));
-}, (err) => {
-  console.log("err: " + err);
-}).then(d => console.log(d));
+module.exports = IPromise;
