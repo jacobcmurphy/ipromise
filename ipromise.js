@@ -37,7 +37,7 @@ function IPromise(fn) {
   }
 
   this.then = function (onFulfilled, onRejected) {
-    return new Promise(function (resolve, reject) {
+    return new IPromise(function (resolve, reject) {
       let doneFullfillFn = function (result) {
         if (typeof onFulfilled === 'function') {
           try {
@@ -97,5 +97,14 @@ function IPromise(fn) {
 
   doResolve(fn, resolve, reject);
 }
+
+
+IPromise.resolve = (value) => {
+  return new IPromise((resolve) => resolve(value));
+};
+
+IPromise.reject = (value) => {
+  return new IPromise((_resolve, reject) => reject(value));
+};
 
 module.exports = IPromise;
