@@ -14,13 +14,28 @@ class IPromise {
     this.doResolve(fn, this.resolve, this.reject);
   }
 
+  static all (promises) {
+    const results = [];
+
+    return new IPromise((resolve, reject) => {
+      if (promises.length === 0) return resolve([]);
+
+      promises.forEach((promise) => {
+        promise.then((result) => {
+          results.push(result);
+          if (results.lenth === promises.length) return resolve(results);
+        }).catch((err) => reject(err));
+      });
+    });
+  }
+
   static resolve (value) {
     return new IPromise((resolve) => resolve(value));
   }
 
   static reject (value) {
     return new IPromise((_resolve, reject) => reject(value));
-  };
+  }
 
   reject (error) {
     this.state = 'REJECTED';
@@ -89,7 +104,6 @@ class IPromise {
       });
     });
   }
-
 
   catch (onRejected) {
     return this.then(null, onRejected);
