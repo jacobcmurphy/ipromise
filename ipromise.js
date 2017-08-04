@@ -1,20 +1,26 @@
-// Thanks to https://www.promisejs.org/implementing/ from which I eagerly copied and modified.
-
 class IPromise {
   constructor (fn) {
     this.state = 'PENDING'; // store state which can be 'PENDING', 'FULFILLED' or 'REJECTED'
     this.value = null;      // store value once 'FULFILLED' or 'REJECTED'
     this.handlers = [];     // store sucess & failure handlers
 
-    this.reject = this.reject.bind(this);
-    this.resolve = this.resolve.bind(this);
-    this.handle = this.handle.bind(this);
     this.then = this.then.bind(this);
     this.catch = this.catch.bind(this);
+    this.resolve = this.resolve.bind(this);
+    this.reject = this.reject.bind(this);
+    this.handle = this.handle.bind(this);
     this.doResolve = this.doResolve.bind(this);
 
     this.doResolve(fn, this.resolve, this.reject);
   }
+
+  static resolve (value) {
+    return new IPromise((resolve) => resolve(value));
+  }
+
+  static reject (value) {
+    return new IPromise((_resolve, reject) => reject(value));
+  };
 
   reject (error) {
     this.state = 'REJECTED';
@@ -27,7 +33,7 @@ class IPromise {
     try {
       let then = (result && typeof result.then === 'function') ? result.then : null;
       if (then) {
-        this.doResolve(then.bind(result), resolve, reject);
+        this.doResolve(then.bind(result), this.resolve, this.reject);
         return;
       }
       this.state = 'FULFILLED';
@@ -50,9 +56,8 @@ class IPromise {
   }
 
   then (onFulfilled, onRejected) {
-    let self = this;
-    return new IPromise(function (resolve, reject) {
-      let doneFullfillFn = function (result) {
+    return new IPromise((resolve, reject) => {
+      let doneFullfillFn = (result) => {
         if (typeof onFulfilled === 'function') {
           try {
             return resolve(onFulfilled(result));
@@ -64,7 +69,7 @@ class IPromise {
         }
       };
 
-      let doneRejectedFn = function (error) {
+      let doneRejectedFn = (error) => {
         if (typeof onRejected === 'function') {
           try {
             return resolve(onRejected(error));
@@ -76,8 +81,8 @@ class IPromise {
         }
       };
 
-      return process.nextTick(function () {
-        self.handle({
+      return process.nextTick(() => {
+        this.handle({
           onFulfilled: doneFullfillFn,
           onRejected: doneRejectedFn
         });
@@ -93,11 +98,11 @@ class IPromise {
   doResolve (fn, onFulfilled, onRejected) {
     let done = false;
     try {
-      fn(function (value) {
+      fn((value) => {
         if (done) return;
         done = true;
         onFulfilled(value);
-      }, function (reason) {
+      }, (reason) => {
         if (done) return;
         done = true;
         onRejected(reason);
@@ -109,14 +114,5 @@ class IPromise {
     }
   }
 }
-
-IPromise.prototype.resolve = (value) => {
-  return new IPromise((resolve) => resolve(value));
-};
-
-IPromise.prototype.reject = (err) => {
-  return new IPromise((_resolve, reject) => reject(err));
-};
-
 
 module.exports = IPromise;
