@@ -23,7 +23,7 @@ class IPromise {
       promises.forEach((promise) => {
         promise.then((result) => {
           results.push(result);
-          if (results.lenth === promises.length) return resolve(results);
+          if (results.length === promises.length) return resolve(results);
         }).catch((err) => reject(err));
       });
     });
